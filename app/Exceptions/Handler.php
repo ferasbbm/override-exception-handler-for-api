@@ -9,7 +9,6 @@ use Illuminate\Validation\ValidationException;
 use App\Http\Controllers\Api\V1\ApiResponseAble;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -42,15 +41,13 @@ class Handler extends ExceptionHandler
     ];
 
     /**
-     * Report or log an exception.
-     *
      * @param Exception $exception
      *
      * @return void
-     *
      * @throws Exception
+     * @author <ferasbbm>
      */
-    public function report(Exception $exception)
+    public function report(Exception $exception):void
     {
         parent::report($exception);
     }
