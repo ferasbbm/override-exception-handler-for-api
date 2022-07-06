@@ -2,14 +2,14 @@
 
 namespace App\Exceptions;
 
-use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Auth\AuthenticationException;
-use Illuminate\Validation\ValidationException;
 use App\Http\Controllers\Api\V1\ApiResponseAble;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Symfony\Component\HttpFoundation\Response;
+use Illuminate\Http\Response;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 /**
  * Class Handler
@@ -36,47 +36,41 @@ class Handler extends ExceptionHandler
      * @var array
      */
     protected $dontFlash = [
+        'current_password',
         'password',
         'password_confirmation',
     ];
 
     /**
-     * @param Exception $exception
+     * Register the exception handling callbacks for the application.
      *
      * @return void
-     * @throws Exception
-     * @author <ferasbbm>
      */
-    public function report(Exception $exception):void
+    public function register()
     {
-        parent::report($exception);
+        $this->reportable(function (Throwable $e) {
+            //
+        });
     }
 
     /**
-     * @param           $request
-     * @param Exception $exception
+     * @param                         $request
+     * @param AuthenticationException $exception
      *
-     * @return JsonResponse | Response
-     * @throws Exception
+     * @return RedirectResponse | Response
      * @author <ferasbbm>
      */
-    public function render($request, Exception $exception): ?JsonResponse
+    protected function unauthenticated($request, AuthenticationException $exception): ?JsonResponse
     {
-        if ($request->wantsJson() || $request->is('api/*')) {
-            if ($exception instanceof ModelNotFoundException) {
-                return $this->notFoundResponse();
-            }
-
-            if ($exception instanceof AuthenticationException) {
-                return $this->unAuthenticatedResponse();
-            }
-
-            if ($exception instanceof ValidationException) {
-                return $this->validationErrorResponse($exception->errors());
-            }
-        }
-
-        return parent::render($request, $exception);
+        return $request->wantsJson() || $request->routeIs('*/api/*')
+            ? $this->unAuthenticatedResponse()
+            : redirect()->guest($exception->guards()[ 0 ] == 'admin' ? route('admin.login') : $exception->redirectTo() ?? route('login'));
     }
 
+    protected function invalidJson($request, ValidationException $exception)
+    {
+        if ($request->wantsJson() || $request->routeIs('*/api/*'))
+            return $this->validationErrorResponse($exception->errors());
+    }
 }
+
