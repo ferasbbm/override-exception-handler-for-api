@@ -74,6 +74,10 @@ class Handler extends ExceptionHandler
             if ($exception instanceof ValidationException) {
                 return $this->validationErrorResponse($exception->errors());
             }
+            
+            if ($exception instanceof NotFoundHttpException) {
+                return $this->ApiErrorResponse(null, trans('api.urlNotFound'),Response::HTTP_NOT_FOUND);
+            }
         }
 
         return parent::render($request, $exception);
