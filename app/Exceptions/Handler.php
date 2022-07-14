@@ -10,12 +10,13 @@ use App\Http\Controllers\Api\V1\ApiResponseAble;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Class Handler
  *
  * @author  <feras.bbm@gmail.com>
- * @package App\Exceptions
+ * @package https://github.com/ferasbbm/override-exception-handler-for-api
  */
 class Handler extends ExceptionHandler
 {
@@ -47,7 +48,7 @@ class Handler extends ExceptionHandler
      * @throws Exception
      * @author <ferasbbm>
      */
-    public function report(Exception $exception):void
+    public function report(Exception $exception): void
     {
         parent::report($exception);
     }
@@ -60,7 +61,7 @@ class Handler extends ExceptionHandler
      * @throws Exception
      * @author <ferasbbm>
      */
-    public function render($request, Exception $exception): ?JsonResponse
+    public function render($request, Exception $exception)
     {
         if ($request->wantsJson() || $request->is('api/*')) {
             if ($exception instanceof ModelNotFoundException) {
@@ -74,7 +75,7 @@ class Handler extends ExceptionHandler
             if ($exception instanceof ValidationException) {
                 return $this->validationErrorResponse($exception->errors());
             }
-            
+
             if ($exception instanceof NotFoundHttpException) {
                 return $this->ApiErrorResponse(null, trans('api.urlNotFound'),Response::HTTP_NOT_FOUND);
             }
